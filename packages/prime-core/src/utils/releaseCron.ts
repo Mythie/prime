@@ -5,7 +5,6 @@ import { LessThan } from 'typeorm';
 import { InjectRepository } from 'typeorm-typedi-extensions';
 import { DocumentRepository } from '../modules/internal/repositories/DocumentRepository';
 import { ReleaseRepository } from '../modules/internal/repositories/ReleaseRepository';
-import { UserRepository } from '../modules/internal/repositories/UserRepository';
 
 const log = debug('prime:release:cron');
 
@@ -33,22 +32,7 @@ export class ReleaseCron {
   private readonly releaseRepository: ReleaseRepository;
 
   @InjectRepository()
-  private readonly userRepository: UserRepository;
-
-  @InjectRepository()
   private readonly documentRepository: DocumentRepository;
-
-  /**
-   * Gets the user that will be publishing the releases
-   */
-  private async getUser(): Promise<User | undefined> {
-    // Get the first user for now
-    this.user = await this.userRepository.findOne({
-      order: { createdAt: 'ASC' },
-    });
-
-    return this.user;
-  }
 
   private async tick() {
     log('checking for pending releases');
@@ -62,31 +46,23 @@ export class ReleaseCron {
       },
     });
 
-    // Check that their is a valid user to use
-    if (!this.user) {
-      await this.getUser();
-    }
+    // For every release
+    for (const release of releases) {
+      log(`releasing, ${release.name}`);
 
-    // If we have a user
-    if (this.user) {
-      // For every release
-      for (const release of releases) {
-        log(`releasing, ${release.name}`);
+      // Publish the related documents
+      const docs = release.documents.map(x => this.documentRepository.publish(x, this.user!.id));
+      await Promise.all(docs);
 
-        // Publish the related documents
-        const docs = release.documents.map(x => this.documentRepository.publish(x, this.user!.id));
-        await Promise.all(docs);
+      // Then update any documents with the release id to no longer contain the release id
+      await this.documentRepository.update({ releaseId: release.id }, { releaseId: null as any });
 
-        // Then update any documents with the release id to no longer contain the release id
-        await this.documentRepository.update({ releaseId: release.id }, { releaseId: null as any });
+      // Update the release to have a publishedAt date and publishedBy user
+      release.publishedAt = new Date();
+      release.publishedBy = release.user.id;
 
-        // Update the release to have a publishedAt date and publishedBy user
-        release.publishedAt = new Date();
-        release.publishedBy = this.user.id;
-
-        // And then save the updated release
-        await this.releaseRepository.save(release);
-      }
+      // And then save the updated release
+      await this.releaseRepository.save(release);
     }
   }
 }
