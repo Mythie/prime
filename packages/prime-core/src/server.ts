@@ -5,10 +5,8 @@ import express from 'express';
 import { buildSchema } from 'graphql';
 import http from 'http';
 import sofa from 'sofa-api';
-import { ResolverData } from 'type-graphql';
 import { Container } from 'typedi';
 import { useContainer } from 'typeorm';
-import { Context } from './interfaces/Context';
 import { ServerConfig } from './interfaces/ServerConfig';
 import { createExternal } from './modules/external';
 import { createInternal } from './modules/internal';
@@ -95,7 +93,7 @@ export const createServer = async ({ port, connection }: ServerConfig) => {
       return context(ctx);
     },
     schema,
-    formatResponse(response: any, resolver: ResolverData<Context>) {
+    formatResponse(response: any, resolver: any) {
       Container.reset(resolver.context.requestId);
       return response;
     },
