@@ -1,17 +1,18 @@
+import React from 'react';
+import Cropper from 'react-easy-crop';
+
 import { PrimeFieldProps } from '@primecms/field';
 import { Button, Dropdown, Form, Icon, Menu, Modal, Upload } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 import { UploadChangeParam } from 'antd/lib/upload';
 import { UploadFile } from 'antd/lib/upload/interface';
 import { get } from 'lodash';
-import React from 'react';
-import Cropper from 'react-easy-crop';
 
 const CROP_SIZE = 800;
 
 type PrimeUploadFile = UploadFile & { imageUrl: string };
 
-const getInitialFile = (value?: { url: string } | string) => {
+const getInitialFile = (value?: { url: string } | string): any => {
   if (typeof value === 'string') {
     return null;
   }
@@ -47,7 +48,7 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps> {
     file: getInitialFile(get(this.props, 'initialValue')),
   };
 
-  public url = (() => {
+  public url = ((): URL => {
     try {
       return new URL(
         String(this.props.stores.Settings.env.CLOUDINARY_URL).replace(/^cloudinary/, 'http')
@@ -61,11 +62,11 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps> {
 
   private cropPixels = { x: 0, y: 0, width: 0, height: 0 };
 
-  public componentDidMount() {
+  public componentDidMount(): void {
     this.getImageSize();
   }
 
-  public componentWillReceiveProps(nextProps: PrimeFieldProps) {
+  public UNSAFE_componentWillReceiveProps(nextProps: PrimeFieldProps): void {
     if (!this.props.document && nextProps.document) {
       this.setState({
         file: getInitialFile(nextProps.initialValue),
@@ -73,18 +74,18 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps> {
     }
   }
 
-  public onBeforeUpload = async () => {
+  public onBeforeUpload = async (): Promise<void> => {
     const { username, password } = this.url;
 
     const timestamp = Math.round(Date.now() / 1000);
-    const params = {
+    const params: { upload_preset: string; image_metadata: boolean; timestamp: number } = {
       upload_preset: 'prime-asset',
       image_metadata: true,
       timestamp,
     };
 
     const toSign = Object.entries(params)
-      .filter(([key, value]) => value && String(value).length > 0)
+      .filter(([, value]) => value && String(value).length > 0)
       .map(([key, value]: [string, any]) => `${key}=${[].concat(value || []).join(',')}`)
       .sort()
       .join('&');
@@ -103,7 +104,7 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps> {
     });
   };
 
-  public onChange = (e: UploadChangeParam) => {
+  public onChange = (e: UploadChangeParam): void => {
     const { form, path } = this.props;
     const files = e.fileList.slice(0);
     let file;
@@ -126,14 +127,15 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps> {
     this.setState({ file }, this.getImageSize);
   };
 
-  public getImageSize = () => {
+  public getImageSize = (): void => {
     if (!this.state.file) {
       return;
     }
 
     const image = new Image();
+
     image.src = this.state.file.imageUrl;
-    image.onload = () => {
+    image.onload = (): void => {
       this.setState({
         file: {
           ...this.state.file,
@@ -144,15 +146,15 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps> {
     };
   };
 
-  public onClosePreview = () => {
+  public onClosePreview = (): void => {
     this.setState({ previewVisible: false });
   };
 
-  public onPreview = () => {
+  public onPreview = (): void => {
     this.setState({ previewVisible: true });
   };
 
-  public onMenuClick = (e: ClickParam) => {
+  public onMenuClick = (e: ClickParam): void => {
     const { field, path, form } = this.props;
 
     const crop = get(field.options, 'crops', []).find((c: { name: string }) => c.name === e.key);
@@ -190,22 +192,22 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps> {
     }
   };
 
-  public onZoomChange = (cropZoom: number) => {
+  public onZoomChange = (cropZoom: number): void => {
     this.setState({ cropZoom });
   };
 
-  public onCropChange = (cropOffset: { x: number; y: number }) => {
+  public onCropChange = (cropOffset: { x: number; y: number }): void => {
     this.setState({ cropOffset });
   };
 
   public onCropComplete = (
     croppedArea: null,
     cropPixels: { x: number; y: number; width: number; height: number }
-  ) => {
+  ): void => {
     this.cropPixels = cropPixels;
   };
 
-  public onCropConfirm = () => {
+  public onCropConfirm = (): void => {
     const { path } = this.props;
     const { setFieldsValue } = this.props.form;
     this.setState({ cropVisible: false });
@@ -229,12 +231,11 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps> {
     }
   };
 
-  public onCropCancel = () => {
+  public onCropCancel = (): void => {
     this.setState({ cropVisible: false });
   };
 
-  // tslint:disable-next-line max-func-body-length
-  public render() {
+  public render(): JSX.Element {
     const { form, field, path, initialValue } = this.props;
     const { previewVisible, cropVisible, cropOffset, cropZoom, uploadPayload, file } = this.state;
     const { getFieldDecorator } = form;

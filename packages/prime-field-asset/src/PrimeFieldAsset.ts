@@ -13,16 +13,16 @@ interface Options {
 }
 
 export class PrimeFieldAsset extends PrimeField {
-  public static type: string = 'asset';
-  public static title: string = 'Asset';
-  public static description: string = 'Images, videos and other assets';
+  public static type = 'asset';
+  public static title = 'Asset';
+  public static description = 'Images, videos and other assets';
   public static defaultOptions: Options = {
     crops: [],
   };
 
   public static env = ['CLOUDINARY_URL'];
 
-  public outputType(context: PrimeFieldContext) {
+  public outputType(context: PrimeFieldContext): any {
     const options = this.options;
 
     return {
@@ -30,9 +30,9 @@ export class PrimeFieldAsset extends PrimeField {
         crop: { type: GraphQLString },
       },
       type: GraphQLString,
-      resolve(root, args, ctx, info) {
+      resolve(root, args, ctx, info): string | null {
         const data = get(root, info.fieldName, {});
-        let image = get(data, 'url', '');
+        let image: string = get(data, 'url', '');
 
         const fieldCrops = get(options, 'crops', []);
         const crops = get(data, 'crops', []);
@@ -68,7 +68,7 @@ export class PrimeFieldAsset extends PrimeField {
     };
   }
 
-  public inputType(context: PrimeFieldContext) {
+  public inputType(context: PrimeFieldContext): any {
     return {
       type: GraphQLString,
     };

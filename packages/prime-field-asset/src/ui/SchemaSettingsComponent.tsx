@@ -1,28 +1,29 @@
+import React from 'react';
+
 import { PrimeFieldProps } from '@primecms/field';
 import { Button, Form, Input } from 'antd';
 import { get } from 'lodash';
-import React from 'react';
 
-interface IState {
+interface State {
   cropSizes: boolean[];
 }
 
-interface IOptionsCrop {
+interface OptionsCrop {
   name?: string;
   width?: string | number;
   height?: string | number;
 }
 
 interface Options {
-  crops?: IOptionsCrop[];
+  crops?: OptionsCrop[];
 }
 
 type Props = PrimeFieldProps & {
   options: Options;
 };
 
-export class SchemaSettingsComponent extends React.Component<Props, IState> {
-  public static BEFORE_SUBMIT(options: Options) {
+export class SchemaSettingsComponent extends React.Component<Props, State> {
+  public static BEFORE_SUBMIT(options: Options): void {
     if (options.crops) {
       options.crops = options.crops.filter(n => {
         if (n.name === '' || n.width === '' || n.height === '') {
@@ -34,13 +35,13 @@ export class SchemaSettingsComponent extends React.Component<Props, IState> {
     }
   }
 
-  public state: IState = {
+  public state: State = {
     cropSizes: [],
   };
 
   private initialCropSizes = [];
 
-  public componentDidMount() {
+  public componentDidMount(): void {
     const opts = this.props.field.options || {};
     this.initialCropSizes = get(opts, 'crops', [
       {
@@ -52,16 +53,16 @@ export class SchemaSettingsComponent extends React.Component<Props, IState> {
     this.setState({ cropSizes: this.initialCropSizes.map(() => true) });
   }
 
-  public onRemoveCropSize = (e: React.MouseEvent<HTMLElement>) => {
+  public onRemoveCropSize = (e: React.MouseEvent<HTMLElement>): void => {
     const index = Number(e.currentTarget.dataset.index);
     const cropSizes = this.state.cropSizes.slice(0);
     cropSizes[index] = false;
     this.setState({ cropSizes });
   };
 
-  public renderCropSize = (cropSize: unknown, index: number) => {
+  public renderCropSize = (cropSize: unknown, index: number): JSX.Element => {
     if (!cropSize) {
-      return null;
+      return <></>;
     }
 
     const { getFieldDecorator } = this.props.form;
@@ -113,7 +114,7 @@ export class SchemaSettingsComponent extends React.Component<Props, IState> {
     );
   };
 
-  public onAddCropSize = () => {
+  public onAddCropSize = (): void => {
     const newCropSizes = this.state.cropSizes.slice(0);
 
     newCropSizes.push(true);
@@ -123,7 +124,7 @@ export class SchemaSettingsComponent extends React.Component<Props, IState> {
     });
   };
 
-  public render() {
+  public render(): JSX.Element {
     return (
       <>
         <Form.Item label="Crops" style={{ margin: 0 }} />
