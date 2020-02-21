@@ -1,4 +1,5 @@
 import { GraphQLFieldConfig } from 'graphql';
+
 import { Schema } from './Schema';
 import { SchemaField } from './SchemaField';
 

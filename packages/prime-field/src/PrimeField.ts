@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { GraphQLFieldConfig, GraphQLInputFieldConfig, GraphQLInputType } from 'graphql';
 import { defaultsDeep } from 'lodash';
 import { Repository } from 'typeorm';
+
 import { Document } from './interfaces/Document';
 import { PrimeFieldContext } from './interfaces/PrimeFieldContext';
 import { PrimeFieldOperation } from './interfaces/PrimeFieldOperation';
@@ -23,8 +25,9 @@ export class PrimeField {
     }
   ) {}
 
-  public get options() {
+  public get options(): any {
     const defaults = Object.getPrototypeOf(this).constructor.defaultOptions;
+
     return defaultsDeep(this.schemaField.options, defaults);
   }
 
