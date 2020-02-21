@@ -1,9 +1,10 @@
+import React from 'react';
+import { Map, TileLayer } from 'react-leaflet';
+
 import { PrimeFieldProps } from '@primecms/field';
 import { Form } from 'antd';
 import { ValidationRule } from 'antd/lib/form';
 import { icon } from 'leaflet';
-import React from 'react';
-import { Map, TileLayer } from 'react-leaflet';
 
 export class InputComponent extends React.PureComponent<PrimeFieldProps> {
   public state = {
@@ -34,7 +35,7 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps> {
     shadowSize: [41, 41],
   });
 
-  public render() {
+  public render(): JSX.Element {
     const { form, field, path } = this.props;
     const { getFieldDecorator } = form;
 
@@ -78,7 +79,7 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps> {
           <Map
             closePopupOnClick={false}
             center={{ lat: value.latitude, lng: value.longitude }}
-            onViewportChange={(viewport: { center: [number, number]; zoom: number }) => {
+            onViewportChange={(viewport: { center: [number, number]; zoom: number }): void => {
               const marker = {
                 latitude: viewport.center[0],
                 longitude: viewport.center[1],

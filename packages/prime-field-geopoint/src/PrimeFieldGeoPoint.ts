@@ -1,5 +1,11 @@
 import { PrimeField, PrimeFieldContext } from '@primecms/field';
-import { GraphQLFloat, GraphQLInputObjectType, GraphQLInt, GraphQLObjectType } from 'graphql';
+import {
+  GraphQLFloat,
+  GraphQLInputFieldConfig,
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLObjectType,
+} from 'graphql';
 
 interface Options {
   required: boolean;
@@ -24,21 +30,21 @@ const GeoPointInput = new GraphQLInputObjectType({
 });
 
 export class PrimeFieldGeoPoint extends PrimeField {
-  public static type: string = 'geopoint';
-  public static title: string = 'Geo Point';
-  public static description: string = 'Geo point field';
+  public static type = 'geopoint';
+  public static title = 'Geo Point';
+  public static description = 'Geo point field';
   public static defaultOptions: Options = {
     required: false,
   };
 
-  public async outputType(context: PrimeFieldContext) {
+  public async outputType(context: PrimeFieldContext): Promise<any> {
     return {
       type: GeoPoint,
       description: this.schemaField.description,
     };
   }
 
-  public async inputType(context: PrimeFieldContext) {
+  public async inputType(context: PrimeFieldContext): Promise<GraphQLInputFieldConfig> {
     return {
       type: GeoPointInput,
       description: this.schemaField.description,

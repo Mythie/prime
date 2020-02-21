@@ -1,7 +1,9 @@
 import { registerField } from '@primecms/field';
+
+import './styles';
+
 import { InputComponent } from './InputComponent';
 import { SchemaSettingsComponent } from './SchemaSettingsComponent';
-import './styles';
 
 const style = document.createElement('link');
 style.rel = 'stylesheet';
