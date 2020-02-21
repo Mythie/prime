@@ -1,7 +1,8 @@
+import React from 'react';
+
 import { PrimeFieldProps } from '@primecms/field';
 import { Form, Input, Switch } from 'antd';
 import { get } from 'lodash';
-import React from 'react';
 
 type Props = PrimeFieldProps & {
   options: {
@@ -17,7 +18,7 @@ type Props = PrimeFieldProps & {
 };
 
 export class SchemaSettingsComponent extends React.PureComponent<Props> {
-  public render() {
+  public render(): JSX.Element {
     const { form, options } = this.props;
 
     return (

@@ -1,10 +1,11 @@
+import React from 'react';
+
 import { PrimeFieldProps } from '@primecms/field';
 import { Form, Input } from 'antd';
-import React from 'react';
 import { ValidationRule } from 'antd/lib/form'; // tslint:disable-line
 
 export class InputComponent extends React.PureComponent<PrimeFieldProps> {
-  public render() {
+  public render(): JSX.Element {
     const { form, field, path, initialValue = false } = this.props;
     const { getFieldDecorator } = form;
     const rules = field.options.rules || {};
