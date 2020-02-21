@@ -1,12 +1,16 @@
+import React from 'react';
+
 import { spawn } from 'child_process';
-import copyTemplateDir from 'copy-template-dir';
 import fs from 'fs';
-import { Box, Color, render } from 'ink';
+import path from 'path';
+
+import copyTemplateDir from 'copy-template-dir';
+import { Box, Color, Instance, render } from 'ink';
 import TextInput from 'ink-text-input';
 import Static from 'ink/build/components/Static';
 import { kebabCase } from 'lodash';
-import path from 'path';
-import React from 'react';
+import meow from 'meow';
+
 import { Spinner } from '../components/ink-spinner';
 
 enum WizardState {
@@ -33,8 +37,8 @@ interface State {
   installMessage: string;
 }
 
-export const initCommand = cli => {
-  setInterval(() => null, 100);
+export const initCommand = (cli: meow.Result): Instance => {
+  // setInterval(() => null, 100); Why is this here?
   return render(<InitCommand projectName={cli.input[1]} />);
 };
 
@@ -49,7 +53,7 @@ class InitCommand extends React.Component<Props, State> {
     installMessage: 'Installing...',
   };
 
-  public getInitialWizardState() {
+  public getInitialWizardState(): WizardState {
     if (String(this.props.projectName || '').trim() === '') {
       return WizardState.PROJECT_NAME;
     }
@@ -57,41 +61,46 @@ class InitCommand extends React.Component<Props, State> {
     return WizardState.POSTGRES_USERNAME;
   }
 
-  public componentDidMount() {
+  public componentDidMount(): void {
     const ENTER = '\r';
+
     process.stdin.on('data', data => {
       const { wizardState, projectName } = this.state;
-      const s = String(data);
-      if (s === ENTER) {
-        if (wizardState === WizardState.PROJECT_NAME) {
-          const projectNameInvalid = projectName.trim() === '';
-          this.setState({ projectNameInvalid });
-          if (projectNameInvalid) {
-            return;
-          }
-        }
+      let value; // I don't agree with this but thats scoping issues for you
 
-        if (wizardState === WizardState.POSTGRES_USERNAME) {
-          const value = this.state.postgresUsername;
-          if (value.trim() === '') {
-            this.setState({ postgresUsername: require('os').userInfo().username });
-          }
-        }
+      if (String(data) === ENTER) {
+        switch (wizardState) {
+          case WizardState.PROJECT_NAME:
+            const projectNameInvalid = projectName.trim() === '';
+            this.setState({ projectNameInvalid });
 
-        if (wizardState === WizardState.POSTGRES_PASSWORD) {
-          const value = this.state.postgresPassword;
-          if (value.trim() === '') {
-            this.setState({ postgresPassword: '' });
-          }
-        }
+            if (projectNameInvalid) {
+              return;
+            }
+            break;
 
-        if (wizardState === WizardState.POSTGRES_DATABASE) {
-          const value = this.state.postgresDatabase;
-          if (value.trim() === '') {
-            this.setState({ postgresDatabase: 'prime' });
-          }
+          case WizardState.POSTGRES_USERNAME:
+            value = this.state.postgresUsername;
+            if (value.trim() === '') {
+              this.setState({ postgresUsername: require('os').userInfo().username });
+            }
+            break;
 
-          this.install();
+          case WizardState.POSTGRES_PASSWORD:
+            value = this.state.postgresPassword;
+            if (value.trim() === '') {
+              this.setState({ postgresPassword: '' });
+            }
+            break;
+
+          case WizardState.POSTGRES_DATABASE:
+            value = this.state.postgresDatabase;
+            if (value.trim() === '') {
+              this.setState({ postgresDatabase: 'prime' });
+            }
+
+            this.install();
+            break;
         }
 
         this.setState({ wizardState: this.state.wizardState + 1 });
@@ -99,18 +108,20 @@ class InitCommand extends React.Component<Props, State> {
     });
   }
 
-  public install() {
+  public install(): void {
     const { projectName, postgresUsername, postgresPassword, postgresDatabase } = this.state;
 
     const templateDir = path.join(__dirname, '..', '..', 'template');
+
     const targetDir = path.join(process.cwd(), projectName);
+
     const vars = {
       projectName,
       projectNameKebabCase: kebabCase(projectName),
       connectionString: `postgresql://${postgresUsername}${
-        postgresPassword ? `:${postgresPassword}` : ''
-      }@localhost:5432/${postgresDatabase}`,
-      randomSecret: Math.floor(Math.random() * Number.MAX_SAFE_INTEGER),
+        postgresDatabase ? `:${postgresPassword}` : ''
+      }@localhost:5432/${postgresPassword}`,
+      randomSecret: Math.floor(Math.random() * 10000).toString(36),
     };
 
     if (fs.existsSync(targetDir)) {
@@ -118,21 +129,25 @@ class InitCommand extends React.Component<Props, State> {
     }
 
     this.setState({ installMessage: 'Copying template to project directory' });
-    copyTemplateDir(templateDir, targetDir, vars, (err, createdFiles) => {
+
+    copyTemplateDir(templateDir, targetDir, vars, err => {
       if (err) {
         throw err;
       }
+
       this.setState({ installMessage: 'Installing dependencies' });
 
       const installer = spawn('yarn', ['install'], { cwd: targetDir, detached: true });
 
-      installer.stdout.on('data', data => {
+      installer.stdout.on('data', (data: any) => {
+        const installMessage = data
+          .toString()
+          .trim()
+          .split('\n')
+          .pop();
+
         this.setState({
-          installMessage: data
-            .toString()
-            .trim()
-            .split('\n')
-            .pop(),
+          installMessage,
         });
       });
 
@@ -149,7 +164,7 @@ class InitCommand extends React.Component<Props, State> {
     title,
     statePropertyName: string,
     passProps: any = {}
-  ) => {
+  ): JSX.Element => {
     const { wizardState } = this.state;
 
     if (wizardState === targetState) {
@@ -158,7 +173,7 @@ class InitCommand extends React.Component<Props, State> {
           <Box>{title}: </Box>
           <TextInput
             value={this.state[statePropertyName]}
-            onChange={value => {
+            onChange={(value): void => {
               this.setState({
                 projectNameInvalid: false,
                 [statePropertyName]: value,
@@ -168,7 +183,8 @@ class InitCommand extends React.Component<Props, State> {
           />
         </Box>
       );
-    } else if (wizardState >= targetState) {
+    }
+    if (wizardState >= targetState) {
       let value = this.state[statePropertyName];
       if (!value || value === '') {
         value = (passProps && passProps.placeholder) || '';
@@ -185,10 +201,10 @@ class InitCommand extends React.Component<Props, State> {
       );
     }
 
-    return null;
+    return <></>;
   };
 
-  public renderDone() {
+  public renderDone(): JSX.Element {
     if (this.state.wizardState === WizardState.DONE) {
       return (
         <Box flexDirection="column">
@@ -207,10 +223,10 @@ class InitCommand extends React.Component<Props, State> {
         </Box>
       );
     }
-    return null;
+    return <></>;
   }
 
-  public render() {
+  public render(): JSX.Element {
     if (this.state.wizardState >= WizardState.INSTALL) {
       return (
         <Box flexDirection="column">

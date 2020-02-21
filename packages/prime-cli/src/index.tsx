@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import meow from 'meow';
+
 import { initCommand } from './commands/init';
 import { startCommand } from './commands/start';
 
@@ -23,7 +24,9 @@ const cli = meow(
 `
 );
 
-switch (cli.input[0]) {
+const [action] = cli.input;
+
+switch (action) {
   case 'init':
     initCommand(cli);
     break;
@@ -31,6 +34,6 @@ switch (cli.input[0]) {
     startCommand(cli);
     break;
   default:
-    console.log(cli.help); // tslint:disable-line no-console
+    console.log(cli.help);
     process.exit();
 }

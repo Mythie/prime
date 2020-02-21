@@ -1,6 +1,7 @@
+import React from 'react';
+
 import spinners from 'cli-spinners';
 import { Box, Color } from 'ink';
-import React from 'react';
 
 interface Props {
   type?: string;
@@ -17,12 +18,17 @@ export class Spinner extends React.Component<Props, State> {
   };
 
   public timer: NodeJS.Timeout;
-  public getSpinner() {
-    return spinners[this.props.type] || spinners.dots;
+
+  public getSpinner(): spinners.Spinner {
+    if (this.props.type) {
+      return spinners[this.props.type];
+    }
+
+    return spinners.dots;
   }
 
-  public render() {
-    const { type, ...colorProps } = this.props;
+  public render(): JSX.Element {
+    const { ...colorProps } = this.props;
     const spinner = this.getSpinner();
 
     return (
@@ -32,16 +38,16 @@ export class Spinner extends React.Component<Props, State> {
     );
   }
 
-  public componentDidMount() {
+  public componentDidMount(): void {
     const spinner = this.getSpinner();
     this.timer = setInterval(this.switchFrame, spinner.interval);
   }
 
-  public componentWillUnmount() {
+  public componentWillUnmount(): void {
     clearInterval(this.timer);
   }
 
-  public switchFrame = () => {
+  public switchFrame(): void {
     const { frame } = this.state;
     const spinner = this.getSpinner();
     const isLastFrame = frame === spinner.frames.length - 1;
@@ -50,5 +56,5 @@ export class Spinner extends React.Component<Props, State> {
     this.setState({
       frame: nextFrame,
     });
-  };
+  }
 }

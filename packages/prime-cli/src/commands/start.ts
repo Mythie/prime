@@ -1,8 +1,9 @@
 import fs from 'fs';
 import path from 'path';
+
 import pkgUp from 'pkg-up';
 
-export async function startCommand(cli) {
+export async function startCommand(cli): Promise<void> {
   const pkgJson = await pkgUp();
 
   if (!pkgJson) {

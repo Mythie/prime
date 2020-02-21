@@ -1,7 +1,14 @@
-import { Box, Color, StdinContext } from 'ink';
 import React from 'react';
 
-const Indicator = ({ isSelected }: { isSelected: boolean }) => {
+import { Box, Color, StdinContext } from 'ink';
+
+import { ARROW_DOWN, ARROW_UP, CTRL_C, ENTER } from '../common/constants';
+
+export interface IndicatorArgs {
+  isSelected: boolean;
+}
+
+const Indicator = ({ isSelected }: IndicatorArgs): JSX.Element => {
   return (
     <Box>
       <Color blue>{isSelected ? `❯ ` : '  '}</Color>
@@ -9,12 +16,11 @@ const Indicator = ({ isSelected }: { isSelected: boolean }) => {
   );
 };
 
-const ARROW_UP = '\u001B[A';
-const ARROW_DOWN = '\u001B[B';
-const ENTER = '\r';
-const CTRL_C = '\x03';
+export interface ItemArgs extends IndicatorArgs {
+  label: string;
+}
 
-const Item = ({ isSelected, label }: { isSelected: boolean; label: string }) => (
+const Item = ({ isSelected, label }: ItemArgs): JSX.Element => (
   <Color blue={isSelected}>{label}</Color>
 );
 
@@ -22,9 +28,11 @@ interface State {
   selectedIndex: number;
 }
 
-export const SelectInput = (props: any) => (
+export const SelectInput = (props: any): JSX.Element => (
   <StdinContext.Consumer>
-    {({ stdin, setRawMode }) => <InkSelectInput stdin={stdin} setRawMode={setRawMode} {...props} />}
+    {({ stdin, setRawMode }): JSX.Element => (
+      <InkSelectInput stdin={stdin} setRawMode={setRawMode} {...props} />
+    )}
   </StdinContext.Consumer>
 );
 
@@ -33,7 +41,7 @@ class InkSelectInput extends React.Component<any, State> {
     selectedIndex: 0,
   };
 
-  public render() {
+  public render(): JSX.Element {
     const { items } = this.props;
     const { selectedIndex } = this.state;
 
@@ -55,18 +63,23 @@ class InkSelectInput extends React.Component<any, State> {
     );
   }
 
-  public componentDidMount() {
+  public componentDidMount(): void {
     this.props.setRawMode(true);
-    this.props.stdin.on('data', data => {
-      const s = String(data);
-      if (s === ARROW_UP) {
-        this.setState({ selectedIndex: this.state.selectedIndex - 1 });
-      } else if (s === ARROW_DOWN) {
-        this.setState({ selectedIndex: this.state.selectedIndex + 1 });
-      } else if (s === ENTER) {
-        this.props.onSelect(this.props.items[this.state.selectedIndex]);
-      } else if (s === CTRL_C) {
-        this.props.onCancel();
+
+    this.props.stdin.on('data', (data: any) => {
+      const input = String(data);
+
+      switch (input) {
+        case ARROW_UP:
+          this.setState({ selectedIndex: this.state.selectedIndex - 1 });
+          break;
+        case ARROW_DOWN:
+          this.setState({ selectedIndex: this.state.selectedIndex + 1 });
+          break;
+        case ENTER:
+          this.props.onSelect(this.props.items[this.state.selectedIndex]);
+        case CTRL_C:
+          this.props.onCancel();
       }
     });
   }
