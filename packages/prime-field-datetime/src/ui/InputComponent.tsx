@@ -1,15 +1,16 @@
+import React from 'react';
+
 import { PrimeFieldProps } from '@primecms/field';
 import { DatePicker, Form } from 'antd';
 import { get, isEmpty } from 'lodash';
 import moment from 'moment';
-import React from 'react';
 
-interface IState {
+interface State {
   value: any;
 }
 
-export class InputComponent extends React.PureComponent<PrimeFieldProps, IState> {
-  public onChange = (date: any) => {
+export class InputComponent extends React.PureComponent<PrimeFieldProps, State> {
+  public onChange = (date: any): void => {
     const { field, form, path } = this.props;
     const isTime = get(field.options, 'time', false);
     form.setFieldsValue({
@@ -17,7 +18,7 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps, IState>
     });
   };
 
-  public render() {
+  public render(): JSX.Element {
     const { document, field, form, path, initialValue } = this.props;
     const isTime = get(field.options, 'time', false);
     const value =

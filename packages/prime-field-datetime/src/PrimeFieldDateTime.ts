@@ -32,19 +32,20 @@ const WhereDate = new GraphQLInputObjectType({
 });
 
 export class PrimeFieldDateTime extends PrimeField {
-  public static type: string = 'datetime';
-  public static title: string = 'DateTime';
-  public static description: string = 'Date and time field';
+  public static type = 'datetime';
+  public static title = 'DateTime';
+  public static description = 'Date and time field';
+
   public static defaultOptions: Options = {
     time: true,
   };
 
-  public outputType(context: PrimeFieldContext) {
+  public outputType(): any {
     const { time } = this.options;
 
     return {
       type: time ? GraphQLDateTime : GraphQLDate,
-      resolve(root, args, ctx, info) {
+      resolve(root, args, ctx, info): any {
         if (!isEmpty(root[info.fieldName])) {
           const res = new Date(root[info.fieldName]);
           if (res.toString() !== 'Invalid Date') {
@@ -57,13 +58,13 @@ export class PrimeFieldDateTime extends PrimeField {
     };
   }
 
-  public inputType(context: PrimeFieldContext) {
+  public inputType(): any {
     return {
       type: this.options.time ? GraphQLDateTime : GraphQLDate,
     };
   }
 
-  public whereType(context: PrimeFieldContext) {
+  public whereType(): GraphQLInputObjectType {
     return this.options.time ? WhereDateTime : WhereDate;
   }
 }
