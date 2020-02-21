@@ -1,39 +1,40 @@
+import React from 'react';
+
 import { PrimeFieldProps } from '@primecms/field';
 import { Form, TreeSelect } from 'antd';
-import React from 'react';
 import { get } from 'lodash';
 
-interface IContentType {
+interface ContentType {
   documentId: string;
   primary: string;
 }
 
-interface IOption {
+interface Option {
   key: string;
   value: string;
   title: string;
   isLeaf: boolean;
-  children?: IOption[];
+  children?: Option[];
 }
 
-interface IState {
-  options: IOption[];
+interface State {
+  options: Option[];
   loading: boolean;
 }
 
-export class InputComponent extends React.Component<PrimeFieldProps, IState> {
-  public state: IState = {
+export class InputComponent extends React.Component<PrimeFieldProps, State> {
+  public state: State = {
     options: [],
     loading: false,
   };
 
-  public componentDidMount() {
+  public componentDidMount(): void {
     this.load().catch((err: Error) => {
       console.error(err); // tslint:disable-line no-console
     });
   }
 
-  public async load() {
+  public async load(): Promise<void> {
     const { field, stores } = this.props;
 
     this.setState({ loading: true });
@@ -59,7 +60,7 @@ export class InputComponent extends React.Component<PrimeFieldProps, IState> {
         title: contentType.title,
         selectable: false,
         isLeaf: false,
-        children: items.map((item: IContentType) => ({
+        children: items.map((item: ContentType) => ({
           key: item.documentId,
           value: [contentType.id, item.documentId].join(','),
           title: item.primary,
@@ -70,7 +71,7 @@ export class InputComponent extends React.Component<PrimeFieldProps, IState> {
     });
   }
 
-  get defaultValue() {
+  get defaultValue(): string | string[] | undefined {
     const { field, initialValue } = this.props;
     const { multiple = false } = field.options;
 
@@ -85,13 +86,13 @@ export class InputComponent extends React.Component<PrimeFieldProps, IState> {
     }
   }
 
-  public onChange = (value: string | string[]) => {
+  public onChange = (value: string | string[]): void => {
     this.props.form.setFieldsValue({
       [this.props.path]: value,
     });
   };
 
-  public render() {
+  public render(): JSX.Element {
     const { loading, options } = this.state;
     const { field, document, path, form, initialValue } = this.props;
     const { getFieldDecorator } = form;

@@ -1,4 +1,4 @@
-import { PrimeField, PrimeFieldContext } from '@primecms/field';
+import { PrimeField } from '@primecms/field';
 import { GraphQLInputObjectType } from 'graphql';
 import { GraphQLDate, GraphQLDateTime } from 'graphql-iso-date';
 import { isEmpty } from 'lodash';
