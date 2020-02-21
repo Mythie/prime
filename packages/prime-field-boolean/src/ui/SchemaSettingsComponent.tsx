@@ -1,13 +1,17 @@
-import { PrimeFieldProps } from '@primecms/field';
-import { Form, Input, Switch } from 'antd';
 import React from 'react';
 
+import { PrimeFieldProps } from '@primecms/field';
+import { Form, Input, Switch } from 'antd';
+
 type Props = PrimeFieldProps & {
-  options?: { label: string; default: boolean };
+  options?: {
+    label: string;
+    default: boolean;
+  };
 };
 
 export class SchemaSettingsComponent extends React.PureComponent<Props> {
-  public render() {
+  public render(): JSX.Element {
     const { form } = this.props;
     return (
       <>

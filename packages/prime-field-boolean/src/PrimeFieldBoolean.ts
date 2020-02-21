@@ -7,31 +7,32 @@ interface Options {
 }
 
 export class PrimeFieldBoolean extends PrimeField {
-  public static type: string = 'boolean';
-  public static title: string = 'Boolean';
-  public static description: string = 'Boolean field';
+  public static type = 'boolean';
+  public static title = 'Boolean';
+  public static description = 'Boolean field';
+
   public static defaultOptions: Options = {
     label: '',
     default: false,
   };
 
-  public outputType() {
+  public outputType(): any {
     return {
       type: GraphQLBoolean,
     };
   }
 
-  public inputType() {
+  public inputType(): any {
     return {
       type: GraphQLBoolean,
     };
   }
 
-  public whereType() {
+  public whereType(): any {
     return GraphQLBoolean;
   }
 
-  public async processInput(value) {
+  public async processInput(value): Promise<boolean> {
     if (typeof value === 'undefined') {
       return this.options.default;
     }
@@ -39,7 +40,7 @@ export class PrimeFieldBoolean extends PrimeField {
     return Boolean(value);
   }
 
-  public async processOutput(value) {
+  public async processOutput(value): Promise<boolean> {
     if (typeof value === 'undefined') {
       return this.options.default;
     }
