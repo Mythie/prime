@@ -1,24 +1,28 @@
+import React from 'react';
+
 import { PrimeFieldProps } from '@primecms/field';
 import { Button, Card, Form, Icon } from 'antd';
 import { get } from 'lodash';
-import React from 'react';
 
-const randomByte = () => {
+const randomByte = (): string => {
   const seq = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16);
   return seq.substr(seq.length - 1, 1);
 };
-const randomBytes = length =>
+
+const randomBytes = (length): string =>
   Array.from({ length })
     .map(randomByte)
     .join('');
-const randomUuid = () => [8, 4, 4, 4, 12].map(randomBytes).join('-');
+
+const randomUuid = (): string => [8, 4, 4, 4, 12].map(randomBytes).join('-');
 
 const { uuid = { v4: randomUuid } } = window as any;
 
-const initialToken = uuid.v4();
+const initialToken: string = uuid.v4();
 
-const getItems = ({ initialValue, field }: PrimeFieldProps) => {
+const getItems = ({ initialValue, field }: PrimeFieldProps): any[] => {
   const options = { ...field.defaultOptions, ...field.options };
+
   if (!options.repeated) {
     return [[initialToken, 0]];
   }
@@ -30,7 +34,7 @@ const getItems = ({ initialValue, field }: PrimeFieldProps) => {
   return [];
 };
 
-const getIndex = (props: PrimeFieldProps) => {
+const getIndex = (props: PrimeFieldProps): number => {
   return Math.max(-1, ...getItems(props).map(n => n[1])) + 1;
 };
 
@@ -40,12 +44,12 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps, any> {
     index: getIndex(this.props),
   };
 
-  get options() {
+  get options(): any {
     const { field } = this.props;
     return { ...field.defaultOptions, ...field.options };
   }
 
-  public componentWillReceiveProps(nextProps: PrimeFieldProps) {
+  public UNSAFE_componentWillReceiveProps(nextProps: PrimeFieldProps): void {
     if (!this.props.document && nextProps.document) {
       this.setState({
         items: getItems(nextProps),
@@ -63,18 +67,18 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps, any> {
     }
   }
 
-  public onRemoveClick = (e: React.MouseEvent<HTMLElement>) => {
+  public onRemoveClick = (e: React.MouseEvent<HTMLElement>): void => {
     const key = String(e.currentTarget.dataset.key);
     this.remove(key);
   };
 
-  public remove = (k: any) => {
+  public remove = (k: any): void => {
     const items = this.state.items.slice(0);
     items.splice(items.findIndex(n => n[0] === k), 1);
     this.setState({ items });
   };
 
-  public add = () => {
+  public add = (): void => {
     const { items, index } = this.state;
     this.setState({
       items: [...items, [uuid.v4(), index]],
@@ -82,7 +86,7 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps, any> {
     });
   };
 
-  public renderField = (field: any, key: string, index: number) => {
+  public renderField = (field: any, key: string, index: number): React.ReactNode => {
     const repeated = this.options.repeated;
     const prefix = repeated ? `${index}.` : '';
     const path = `${this.props.path}.${prefix}${field.name}`;
@@ -96,13 +100,13 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps, any> {
     });
   };
 
-  public renderGroupItem = ([key, index]: any) => {
+  public renderGroupItem = ([key, index]: any): JSX.Element => {
     const { field } = this.props;
     const { fields = [] } = field;
     const repeated = this.options.repeated;
 
     if (!key) {
-      return null;
+      return <></>;
     }
 
     return (
@@ -122,13 +126,13 @@ export class InputComponent extends React.PureComponent<PrimeFieldProps, any> {
     );
   };
 
-  public render() {
+  public render(): JSX.Element {
     const { items } = this.state;
     const { field } = this.props;
     const repeated = this.options.repeated;
 
     if (field.fields.length === 0) {
-      return null;
+      return <></>;
     }
 
     return (

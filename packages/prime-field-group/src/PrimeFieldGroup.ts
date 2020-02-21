@@ -1,5 +1,10 @@
 import { PrimeField, PrimeFieldContext, PrimeFieldOperation } from '@primecms/field';
-import { GraphQLInputObjectType, GraphQLList, GraphQLObjectType } from 'graphql';
+import {
+  GraphQLInputFieldConfig,
+  GraphQLInputObjectType,
+  GraphQLList,
+  GraphQLObjectType,
+} from 'graphql';
 import { camelCase, upperFirst } from 'lodash';
 
 interface Options {
@@ -10,11 +15,15 @@ export class PrimeFieldGroup extends PrimeField {
   public static type = 'group';
   public static title = 'Group';
   public static description = 'Group other fields to list';
+
   public static defaultOptions: Options = {
     repeated: true,
   };
 
-  public async outputType(context: PrimeFieldContext, operation: PrimeFieldOperation.READ) {
+  public async outputType(
+    context: PrimeFieldContext,
+    operation: PrimeFieldOperation.READ
+  ): Promise<any> {
     const { name, uniqueTypeName } = context;
     const fields = {};
     const children = context.fields.filter(f => f.parentFieldId === this.schemaField.id);
@@ -41,7 +50,7 @@ export class PrimeFieldGroup extends PrimeField {
   public async inputType(
     context: PrimeFieldContext,
     operation: PrimeFieldOperation.CREATE | PrimeFieldOperation.UPDATE
-  ) {
+  ): Promise<GraphQLInputFieldConfig> {
     const { name, uniqueTypeName } = context;
     const fields = {};
     const children = context.fields.filter(f => f.parentFieldId === this.schemaField.id);
@@ -72,7 +81,7 @@ export class PrimeFieldGroup extends PrimeField {
     };
   }
 
-  public async whereType(context: PrimeFieldContext) {
+  public async whereType(context: PrimeFieldContext): Promise<GraphQLInputObjectType> {
     const name = context.uniqueTypeName(
       `${context.name}_Sort_${upperFirst(camelCase(this.schemaField.name))}`
     );
@@ -99,7 +108,7 @@ export class PrimeFieldGroup extends PrimeField {
     });
   }
 
-  public async processOutput(value) {
+  public async processOutput(value): Promise<any> {
     if (!Array.isArray(value) && this.options.repeated) {
       return [value];
     }
