@@ -4,8 +4,10 @@ import { mapValues, omitBy } from 'lodash';
 import { buildTypeDefsAndResolvers } from 'type-graphql';
 import Container from 'typedi';
 import { Connection } from 'typeorm';
+
 import { pubSub } from '../../utils/pubSub';
 import { createAccounts } from '../accounts';
+
 import { AccessTokenResolver } from './resolvers/AccessTokenResolver';
 import { DocumentResolver } from './resolvers/DocumentResolver';
 import { PrimeResolver } from './resolvers/PrimeResolver';
@@ -21,7 +23,7 @@ import { noUndefinedTypeOf } from './utils/noUndefinedTypeOf';
 
 export const log = debug('prime:core');
 
-export const createInternal = async (connection: Connection) => {
+export const createInternal = async (connection: Connection): Promise<GraphQLModule> => {
   log('building schema');
 
   const accounts = await createAccounts(connection);

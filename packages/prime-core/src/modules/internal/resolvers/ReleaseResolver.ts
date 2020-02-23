@@ -13,6 +13,7 @@ import {
 import { Inject } from 'typedi';
 import { getRepository, In } from 'typeorm';
 import { InjectRepository } from 'typeorm-typedi-extensions';
+
 import { Document } from '../../../entities/Document';
 import { Release } from '../../../entities/Release';
 import { User } from '../../../entities/User';
@@ -24,11 +25,12 @@ import { ConnectionArgs, createConnectionType } from '../types/createConnectionT
 import { ReleaseInput } from '../types/ReleaseInput';
 import { Authorized } from '../utils/Authorized';
 import { ExtendedConnection } from '../utils/ExtendedConnection';
+
 import { DocumentResolver } from './DocumentResolver';
 
 const ReleaseConnection = createConnectionType(Release);
 
-@Resolver(of => Release)
+@Resolver(_of => Release)
 export class ReleaseResolver {
   @InjectRepository(ReleaseRepository)
   private readonly releaseRepository: ReleaseRepository;
@@ -36,19 +38,19 @@ export class ReleaseResolver {
   @InjectRepository(DocumentRepository)
   private readonly documentRepository: DocumentRepository;
 
-  @Inject(x => DocumentResolver)
+  @Inject(_di => DocumentResolver)
   private readonly documentResolver: DocumentResolver;
 
   @Authorized()
-  @Query(returns => Release, { nullable: true, description: 'Get Release by ID' })
+  @Query(_returns => Release, { nullable: true, description: 'Get Release by ID' })
   public Release(
-    @Arg('id', type => ID) id: string //
+    @Arg('id', _type => ID) id: string //
   ): Promise<Release> {
     return this.releaseRepository.loadOne(id);
   }
 
   @Authorized()
-  @Query(returns => ReleaseConnection, { description: 'Get many Releases' })
+  @Query(_returns => ReleaseConnection, { description: 'Get many Releases' })
   public allReleases(
     @Args() args: ConnectionArgs //
   ) {
@@ -58,7 +60,7 @@ export class ReleaseResolver {
     });
   }
 
-  @Mutation(returns => Release, { description: 'Create Release' })
+  @Mutation(_returns => Release, { description: 'Create Release' })
   public async createRelease(
     @Arg('input') input: ReleaseInput,
     @Ctx() context: Context
@@ -70,9 +72,9 @@ export class ReleaseResolver {
   }
 
   @Authorized()
-  @Mutation(returns => Release, { description: 'Update Release by ID' })
+  @Mutation(_returns => Release, { description: 'Update Release by ID' })
   public async updateRelease(
-    @Arg('id', type => ID) id: string,
+    @Arg('id', _type => ID) id: string,
     @Arg('input') input: ReleaseInput,
     @Ctx() context: Context
   ): Promise<Release> {
@@ -83,9 +85,9 @@ export class ReleaseResolver {
   }
 
   @Authorized()
-  @Mutation(returns => Boolean, { description: 'Remove Release by ID' })
+  @Mutation(_returns => Boolean, { description: 'Remove Release by ID' })
   public async removeRelease(
-    @Arg('id', type => ID) id: string,
+    @Arg('id', _type => ID) id: string,
     @Ctx() context: Context
   ): Promise<boolean> {
     const release = await this.releaseRepository.findOneOrFail(id);
@@ -102,9 +104,9 @@ export class ReleaseResolver {
   }
 
   @Authorized()
-  @Mutation(returns => Release, { description: 'Publish Release by ID' })
+  @Mutation(_returns => Release, { description: 'Publish Release by ID' })
   public async publishRelease(
-    @Arg('id', type => ID) id: string,
+    @Arg('id', _type => ID) id: string,
     @Ctx() context: Context
   ): Promise<Release> {
     const release = await this.Release(id);

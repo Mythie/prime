@@ -12,8 +12,10 @@ import {
   Resolver,
   Root,
 } from 'type-graphql';
-import { Brackets, In, IsNull, Raw } from 'typeorm';
+import { Brackets, In, IsNull, QueryBuilder, Raw } from 'typeorm';
+import { EntityConnectionSortOption } from 'typeorm-cursor-connection';
 import { InjectRepository } from 'typeorm-typedi-extensions';
+
 import { Document } from '../../../entities/Document';
 import { Context } from '../../../interfaces/Context';
 import { DocumentTransformer } from '../../../utils/DocumentTransformer';
@@ -44,7 +46,7 @@ enum DocumentSort {
   schemaId_DESC,
 }
 
-const sortOptions = orders =>
+const sortOptions = (orders: string[]): EntityConnectionSortOption[] =>
   orders.map(orderBy => {
     const [sort, order]: any = orderBy.split('_');
     return { sort, order };
@@ -52,7 +54,7 @@ const sortOptions = orders =>
 
 registerEnumType(DocumentSort, { name: 'DocumentConnectionSort' });
 
-@Resolver(of => Document)
+@Resolver(_of => Document)
 export class DocumentResolver {
   @InjectRepository(SchemaRepository)
   private readonly schemaRepository: SchemaRepository;
@@ -66,12 +68,12 @@ export class DocumentResolver {
   private readonly documentTransformer: DocumentTransformer = new DocumentTransformer();
 
   @Authorized()
-  @Query(returns => Document, { nullable: true })
+  @Query(_returns => Document, { nullable: true })
   public Document(
-    @Arg('id', type => ID, { description: 'Can be either uuid or documentId' }) id: string,
+    @Arg('id', _type => ID, { description: 'Can be either uuid or documentId' }) id: string,
     @Arg('locale', { nullable: true }) locale?: string,
-    @Arg('releaseId', type => ID, { nullable: true }) releaseId?: string
-  ) {
+    @Arg('releaseId', _type => ID, { nullable: true }) releaseId?: string
+  ): Document {
     const key = id.length === 36 ? 'id' : 'documentId';
     return this.documentRepository.loadOneByDocumentId(id, key, {
       releaseId,
@@ -80,15 +82,15 @@ export class DocumentResolver {
   }
 
   @Authorized()
-  @Query(returns => DocumentConnection)
+  @Query(_returns => DocumentConnection)
   public async allDocuments(
-    @Arg('sort', type => [DocumentSort], { defaultValue: 1, nullable: true }) sorts: string[],
-    @Arg('filter', type => [DocumentFilterInput], { nullable: true })
+    @Arg('sort', _type => [DocumentSort], { defaultValue: 1, nullable: true }) sorts: string[],
+    @Arg('filter', _type => [DocumentFilterInput], { nullable: true })
     filters: DocumentFilterInput[],
     @Args() args: ConnectionArgs
-  ) {
+  ): Promise<ExtendedConnection<Document>> {
     const result = new ExtendedConnection(args, {
-      where: (qb, counter = false) => {
+      where: (qb, counter = false): QueryBuilder<Document> => {
         qb.andWhere('Document.deletedAt IS NULL');
 
         const subquery = qb
@@ -143,9 +145,9 @@ export class DocumentResolver {
   }
 
   @Authorized()
-  @Mutation(returns => Document)
+  @Mutation(_returns => Document)
   public async createDocument(
-    @Arg('input', type => DocumentInput) input: DocumentInput,
+    @Arg('input', _type => DocumentInput) input: DocumentInput,
     @Ctx() context: Context
   ): Promise<Document> {
     const schema = await this.schemaRepository.findOneOrFail(input.schemaId, { cache: 1000 });
@@ -161,12 +163,12 @@ export class DocumentResolver {
   }
 
   @Authorized()
-  @Mutation(returns => Document)
+  @Mutation(_returns => Document)
   public async updateDocument(
-    @Arg('id', type => ID) id: string,
-    @Arg('data', type => GraphQLJSON, { nullable: true }) data: GraphQLJSON,
+    @Arg('id', _type => ID) id: string,
+    @Arg('data', _type => GraphQLJSON, { nullable: true }) data: GraphQLJSON,
     @Arg('locale', { nullable: true }) locale: string,
-    @Arg('releaseId', type => ID, { nullable: true }) releaseId: string,
+    @Arg('releaseId', _type => ID, { nullable: true }) releaseId: string,
     @Ctx() context: Context //
   ): Promise<Document> {
     const doc = await this.documentRepository.findOneOrFail({ id, deletedAt: IsNull() });
@@ -190,11 +192,11 @@ export class DocumentResolver {
   }
 
   @Authorized()
-  @Mutation(returns => Boolean)
+  @Mutation(_returns => Boolean)
   public async removeDocument(
-    @Arg('id', type => ID) id: string,
+    @Arg('id', _type => ID) id: string,
     @Arg('locale', { nullable: true }) locale?: string,
-    @Arg('releaseId', type => ID, { nullable: true }) releaseId?: string
+    @Arg('releaseId', _type => ID, { nullable: true }) releaseId?: string
   ): Promise<boolean> {
     const document = await this.Document(id, locale, releaseId);
     await this.documentRepository.update(
@@ -213,9 +215,9 @@ export class DocumentResolver {
   }
 
   @Authorized()
-  @Mutation(returns => Document)
+  @Mutation(_returns => Document)
   public async publishDocument(
-    @Arg('id', type => ID) id: string,
+    @Arg('id', _type => ID) id: string,
     @Ctx() context: Context //
   ) {
     const doc = await this.documentRepository.findOneOrFail({ id, deletedAt: IsNull() });
@@ -226,9 +228,9 @@ export class DocumentResolver {
     return document;
   }
 
-  @Mutation(returns => Document)
+  @Mutation(_returns => Document)
   public async unpublishDocument(
-    @Arg('id', type => ID) id: string,
+    @Arg('id', _type => ID) id: string,
     @Ctx() context: Context //
   ) {
     const doc = await this.documentRepository.findOneOrFail({ id, deletedAt: IsNull() });

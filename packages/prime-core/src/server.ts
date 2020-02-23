@@ -1,12 +1,14 @@
+import http from 'http';
+
 import { ApolloServer } from 'apollo-server-express';
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
 import { buildSchema } from 'graphql';
-import http from 'http';
 import sofa from 'sofa-api';
 import { Container } from 'typedi';
 import { useContainer } from 'typeorm';
+
 import { ServerConfig } from './interfaces/ServerConfig';
 import { createExternal } from './modules/external';
 import { createInternal } from './modules/internal';

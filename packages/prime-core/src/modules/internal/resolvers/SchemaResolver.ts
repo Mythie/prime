@@ -3,6 +3,7 @@ import { Arg, Args, FieldResolver, ID, Mutation, Query, Resolver, Root } from 't
 import { getRepository, Raw } from 'typeorm';
 import { EntityConnection } from 'typeorm-cursor-connection';
 import { InjectRepository } from 'typeorm-typedi-extensions';
+
 import { Document } from '../../../entities/Document';
 import { Schema, SchemaVariant } from '../../../entities/Schema';
 import { processWebhooks } from '../../../utils/processWebhooks';
@@ -17,9 +18,10 @@ import { getSchemaFields } from '../utils/getSchemaFields';
 import { setSchemaFields } from '../utils/setSchemaFields';
 
 const SchemaConnection = createConnectionType(Schema);
+
 const parseEnum = (Enum, value: number) => Enum[(value as unknown) as string];
 
-@Resolver(of => Schema)
+@Resolver(_of => Schema)
 export class SchemaResolver {
   @InjectRepository(SchemaRepository)
   private readonly schemaRepository: SchemaRepository;
@@ -28,9 +30,9 @@ export class SchemaResolver {
   private readonly documentRepository: DocumentRepository;
 
   @Authorized()
-  @Query(returns => Schema, { nullable: true, description: 'Get Schema by ID' })
+  @Query(_returns => Schema, { nullable: true, description: 'Get Schema by ID' })
   public async Schema(
-    @Arg('id', type => ID, { nullable: true }) id: string,
+    @Arg('id', _type => ID, { nullable: true }) id: string,
     @Arg('name', { nullable: true }) name: string
   ) {
     let res;
@@ -48,7 +50,7 @@ export class SchemaResolver {
   }
 
   @Authorized()
-  @Query(returns => SchemaConnection)
+  @Query(_returns => SchemaConnection)
   public async allSchemas(
     @Args() args: ConnectionArgs //
   ) {
@@ -66,9 +68,9 @@ export class SchemaResolver {
   }
 
   @Authorized()
-  @Mutation(returns => Schema)
+  @Mutation(_returns => Schema)
   public async createSchema(
-    @Arg('input', type => SchemaInput) input: SchemaInput & { fields: any }
+    @Arg('input', _type => SchemaInput) input: SchemaInput & { fields: any }
   ): Promise<Schema> {
     input.variant = SchemaVariant[(input.variant as unknown) as string];
     const schema = this.schemaRepository.create(input);
@@ -88,10 +90,10 @@ export class SchemaResolver {
   }
 
   @Authorized()
-  @Mutation(returns => Schema)
+  @Mutation(_returns => Schema)
   public async updateSchema(
-    @Arg('id', type => ID) id: string,
-    @Arg('input', type => SchemaInput) input: SchemaInput & { fields: any }
+    @Arg('id', _type => ID) id: string,
+    @Arg('input', _type => SchemaInput) input: SchemaInput & { fields: any }
   ): Promise<Schema> {
     if (input.fields) {
       await setSchemaFields(id, input.fields);
@@ -108,8 +110,8 @@ export class SchemaResolver {
   }
 
   @Authorized()
-  @Mutation(returns => Boolean)
-  public async removeSchema(@Arg('id', type => ID) id: string): Promise<boolean> {
+  @Mutation(_returns => Boolean)
+  public async removeSchema(@Arg('id', _type => ID) id: string): Promise<boolean> {
     const schema = await this.schemaRepository.findOneOrFail(id);
     await this.documentRepository.update(
       { schemaId: id },
@@ -124,10 +126,10 @@ export class SchemaResolver {
   }
 
   @Authorized()
-  @Query(returns => Boolean)
+  @Query(_returns => Boolean)
   public async schemaNameAvailable(
-    @Arg('name', type => String) name: string,
-    @Arg('variant', type => SchemaVariant, { nullable: true }) variant: number
+    @Arg('name', _type => String) name: string,
+    @Arg('variant', _type => SchemaVariant, { nullable: true }) variant: number
   ) {
     const count = await this.schemaRepository.count({
       where: {

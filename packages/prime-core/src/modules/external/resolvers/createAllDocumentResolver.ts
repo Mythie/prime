@@ -1,4 +1,7 @@
+import { TypeNode } from 'graphql';
+import { MaybePromise } from 'type-graphql';
 import { getRepository } from 'typeorm';
+
 import { Document } from '../../../entities/Document';
 import { SchemaPayload } from '../interfaces/SchemaPayload';
 import { documentWhereBuilder, NestedWhere } from '../utils/documentWhereBuilder';
@@ -101,7 +104,6 @@ export const createAllDocumentResolver = async ({
      * does not properly type the resolveNode function  as a MaybePromise<TNode> return type.
      * In order to asynchronously resolve the node, we need this hack until a PR fixes the typings.
      */
-    // @ts-ignore-next-line
     connection.resolveNode = async node => {
       const data = await documentTransformer.transformOutput(node, schema, fields);
       return {

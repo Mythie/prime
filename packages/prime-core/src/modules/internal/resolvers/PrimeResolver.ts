@@ -6,6 +6,7 @@ import { defaults } from 'lodash';
 import { Arg, Mutation, Query, Resolver } from 'type-graphql';
 import { getRepository, Repository } from 'typeorm';
 import { InjectRepository } from 'typeorm-typedi-extensions';
+
 import { Settings } from '../../../entities/Settings';
 import { UserMeta } from '../../../entities/UserMeta';
 import { fields } from '../../../utils/fields';
@@ -22,44 +23,50 @@ export class PrimeResolver {
   @InjectRepository(Settings)
   private readonly settingsRepository: Repository<Settings>;
 
-  @Query(returns => Boolean)
-  public async isOnboarding() {
+  @Query(_returns => Boolean)
+  public async isOnboarding(): Promise<boolean> {
     const count = await getRepository(User).count();
     return count === 0;
   }
 
-  @Mutation(returns => Boolean)
+  @Mutation(_returns => Boolean)
   public async onboard(
     @Arg('email') email: string,
     @Arg('password') password: string,
-    @Arg('profile', type => GraphQLJSON, { nullable: true }) profile: any
-  ) {
+    @Arg('profile', _type => GraphQLJSON, { nullable: true }) profile: any
+  ): Promise<boolean> {
     if (await this.isOnboarding()) {
       const accounts = AccountsModule.injector.get(AccountsPassword);
       const db = accounts.server.options.db as AccountsTypeorm;
+
       const userId = await accounts.createUser({ email, password });
       await accounts.server.activateUser(userId);
+
       if (profile) {
         const meta = new UserMeta();
         meta.id = userId;
         meta.profile = profile;
+
         await getRepository(UserMeta).save(meta);
       }
+
       await db.verifyEmail(userId, email);
+
       return true;
     }
     return false;
   }
 
   @Authorized()
-  @Query(returns => SettingsType)
-  public async getSettings() {
+  @Query(_returns => SettingsType)
+  public async getSettings(): Promise<SettingsType> {
     let settings = await this.settingsRepository.findOne({
       order: { updatedAt: 'DESC' },
     });
 
     if (!settings) {
       settings = new Settings();
+
       settings.data = {
         accessType: SettingsAccessType[SettingsAccessType.PUBLIC] as any,
         previews: [],
@@ -67,13 +74,14 @@ export class PrimeResolver {
       };
     }
 
-    settings!.data!.env = {};
+    settings.data!.env = {}; // eslint-disable-line
 
     fields.forEach(field => {
       if (field.env) {
         field.env.forEach(name => {
           if (process.env[name]) {
-            settings!.data!.env[name] = process.env[name];
+            // This literally can't be undefined
+            settings!.data!.env[name] = process.env[name]; // eslint-disable-line
           }
         });
       }
@@ -81,36 +89,42 @@ export class PrimeResolver {
 
     settings.ensureMasterLocale();
 
-    return settings.data;
+    // Again this literally can't be undefined
+    return settings!.data!; // eslint-disable-line
   }
 
   @Authorized()
-  @Mutation(returns => SettingsType)
-  public async setSettings(@Arg('input', type => SettingsType) input: SettingsType) {
+  @Mutation(_returns => SettingsType)
+  public async setSettings(
+    @Arg('input', _type => SettingsType) input: SettingsType
+  ): Promise<SettingsType> {
     const data = await this.getSettings();
+
     const settings = this.settingsRepository.create({
       data: defaults(input, data),
     });
+
     await this.settingsRepository.save(settings);
+
     return this.getSettings();
   }
 
   @Authorized()
-  @Query(returns => [PrimeField])
+  @Query(_returns => [PrimeField])
   public allFields(): PrimeField[] {
     return fields;
   }
 
   @Authorized()
-  @Query(returns => [PackageVersion], { nullable: true })
-  public system() {
+  @Query(_returns => [PackageVersion], { nullable: true })
+  public system(): Promise<(PackageVersion | null)[]> {
     return getPackagesVersion();
   }
 
   @Authorized()
-  @Mutation(returns => Boolean)
+  @Mutation(_returns => Boolean)
   public async updateSystem(
-    @Arg('versions', type => [PackageVersionInput]) packagesVersion: PackageVersionInput[]
+    @Arg('versions', _type => [PackageVersionInput]) packagesVersion: PackageVersionInput[]
   ): Promise<boolean> {
     const allowedPackages = [
       '@primecms/core',

@@ -10,7 +10,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
 import { fields } from '../utils/fields';
+
 import { Document } from './Document';
 import { Release } from './Release';
 import { Schema } from './Schema';
@@ -52,26 +54,26 @@ export class SchemaField {
   public primary: boolean;
 
   @Column('jsonb', { default: {} })
-  @Field(type => GraphQLJSON)
+  @Field(_type => GraphQLJSON)
   public options: any;
 
-  @Field(type => [SchemaField], { nullable: true })
+  @Field(_type => [SchemaField], { nullable: true })
   public fields: SchemaField[];
 
   @Column({ nullable: true })
   public parentFieldId?: string;
 
-  @ManyToOne(type => SchemaField, category => category.childFields)
+  @ManyToOne(_type => SchemaField, category => category.childFields)
   public parentField: SchemaField;
 
-  @OneToMany(type => SchemaField, category => category.parentField)
+  @OneToMany(_type => SchemaField, category => category.parentField)
   public childFields: SchemaField[];
 
   @Column({ nullable: true })
   @Field({ nullable: true })
   public schemaId: string;
 
-  @ManyToOne(type => Schema, schema => schema.fields, {
+  @ManyToOne(_type => Schema, schema => schema.fields, {
     onDelete: 'SET NULL',
     nullable: true,
     persistence: false,

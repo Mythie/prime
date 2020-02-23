@@ -17,6 +17,7 @@ import {
 import { getRepository, Repository } from 'typeorm';
 import { EntityConnection } from 'typeorm-cursor-connection';
 import { InjectRepository } from 'typeorm-typedi-extensions';
+
 import { User } from '../../../entities/User';
 import { Webhook } from '../../../entities/Webhook';
 import { WebhookCall } from '../../../entities/WebhookCall';
@@ -38,7 +39,7 @@ registerEnumType(WebhookOrder, {
   name: 'WebhookConnectionOrder',
 });
 
-@Resolver(of => Webhook)
+@Resolver(_of => Webhook)
 export class WebhookResolver {
   @InjectRepository(WebhookRepository)
   private readonly webhookRepository: WebhookRepository;
@@ -46,9 +47,9 @@ export class WebhookResolver {
   private readonly webhookCallRepository: Repository<WebhookCall>;
 
   @Authorized()
-  @Query(returns => Webhook, { nullable: true, description: 'Get Webhook by ID' })
+  @Query(_returns => Webhook, { nullable: true, description: 'Get Webhook by ID' })
   public Webhook(
-    @Arg('id', type => ID) id: string,
+    @Arg('id', _type => ID) id: string,
     @Ctx() context: Context,
     @Info() info: GraphQLResolveInfo
   ) {
@@ -64,10 +65,10 @@ export class WebhookResolver {
   }
 
   @Authorized()
-  @Query(returns => WebhookConnection, { description: 'Get many Webhooks' })
+  @Query(_returns => WebhookConnection, { description: 'Get many Webhooks' })
   public async allWebhooks(
     @Args() args: ConnectionArgs,
-    @Arg('order', type => WebhookOrder, { defaultValue: 0 }) orderBy: string
+    @Arg('order', _type => WebhookOrder, { defaultValue: 0 }) orderBy: string
   ) {
     const [sort, order]: any = orderBy.split('_');
     const connection = await new EntityConnection(args, {
@@ -81,7 +82,7 @@ export class WebhookResolver {
   }
 
   @Authorized()
-  @Mutation(returns => Webhook, { description: 'Create Webhook' })
+  @Mutation(_returns => Webhook, { description: 'Create Webhook' })
   public async createWebhook(
     @Arg('input') input: WebhookInput,
     @Ctx() context: Context
@@ -91,9 +92,9 @@ export class WebhookResolver {
     return webhook;
   }
 
-  @Mutation(returns => Webhook, { description: 'Update Webhook by ID' })
+  @Mutation(_returns => Webhook, { description: 'Update Webhook by ID' })
   public async updateWebhook(
-    @Arg('id', type => ID) id: string,
+    @Arg('id', _type => ID) id: string,
     @Arg('input') input: WebhookInput,
     @Ctx() context: Context
   ): Promise<Webhook> {
@@ -104,9 +105,9 @@ export class WebhookResolver {
   }
 
   @Authorized()
-  @Mutation(returns => Boolean, { description: 'Remove Webhook by ID' })
+  @Mutation(_returns => Boolean, { description: 'Remove Webhook by ID' })
   public async removeWebhook(
-    @Arg('id', type => ID) id: string,
+    @Arg('id', _type => ID) id: string,
     @Ctx() context: Context
   ): Promise<boolean> {
     const entity = await this.webhookRepository.findOneOrFail(id);

@@ -5,6 +5,7 @@ import GraphQLJSON from 'graphql-type-json';
 import { Arg, Args, Ctx, FieldResolver, ID, Mutation, Query, Resolver, Root } from 'type-graphql';
 import { Repository } from 'typeorm';
 import { InjectRepository } from 'typeorm-typedi-extensions';
+
 import { User } from '../../../entities/User';
 import { UserMeta } from '../../../entities/UserMeta';
 import { Context } from '../../../interfaces/Context';
@@ -18,7 +19,7 @@ import { ExtendedConnection } from '../utils/ExtendedConnection';
 
 const UserConnection = createConnectionType(User);
 
-@Resolver(of => User)
+@Resolver(_of => User)
 export class UserResolver {
   @InjectRepository(UserRepository)
   private readonly userRepository: UserRepository;
@@ -30,15 +31,15 @@ export class UserResolver {
   private readonly userEmailRepository: Repository<UserEmail>;
 
   @Authorized()
-  @Query(returns => User)
+  @Query(_returns => User)
   public User(
-    @Arg('id', type => ID) id: string //
+    @Arg('id', _type => ID) id: string //
   ) {
     return this.userRepository.findOneOrFail(id);
   }
 
   @Authorized()
-  @Query(returns => User)
+  @Query(_returns => User)
   public async getUser(@Ctx() context: Context) {
     const meta = await User.meta(context.user.id);
 
@@ -50,7 +51,7 @@ export class UserResolver {
   }
 
   @Authorized(role => role.can('list', 'User'))
-  @Query(returns => UserConnection)
+  @Query(_returns => UserConnection)
   public allUsers(
     @Args() args: ConnectionArgs //
   ) {
@@ -70,11 +71,11 @@ export class UserResolver {
   }
 
   @Authorized(role => role.can('create', 'User'))
-  @Mutation(returns => Boolean)
+  @Mutation(_returns => Boolean)
   public async createPrimeUser(
     @Arg('email') email: string,
     @Arg('password', { nullable: true }) maybePassword: string,
-    @Arg('profile', type => GraphQLJSON, { nullable: true }) profile: any
+    @Arg('profile', _type => GraphQLJSON, { nullable: true }) profile: any
   ) {
     const password = AccountsModule.injector.get(AccountsPassword);
 
@@ -102,7 +103,7 @@ export class UserResolver {
   }
 
   @Authorized()
-  @Mutation(returns => Boolean)
+  @Mutation(_returns => Boolean)
   public async changeEmail(
     @Arg('password') password: string,
     @Arg('email') email: string,
@@ -124,10 +125,10 @@ export class UserResolver {
     return false;
   }
 
-  @Mutation(returns => User)
+  @Mutation(_returns => User)
   public async updateUser(
-    @Arg('id', type => ID) id: string,
-    @Arg('input', type => UpdateUserInput) input: UpdateUserInput,
+    @Arg('id', _type => ID) id: string,
+    @Arg('input', _type => UpdateUserInput) input: UpdateUserInput,
     @Ctx() context: Context
   ) {
     const user = await this.userRepository.findOneOrFail(id);
@@ -141,9 +142,9 @@ export class UserResolver {
   }
 
   @Authorized()
-  @Mutation(returns => Boolean)
+  @Mutation(_returns => Boolean)
   public async removeUser(
-    @Arg('id', type => ID) id: string, //
+    @Arg('id', _type => ID) id: string, //
     @Ctx() context: Context
   ) {
     const user = await this.userRepository.findOneOrFail(id);

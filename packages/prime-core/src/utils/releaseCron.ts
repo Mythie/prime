@@ -3,6 +3,7 @@ import debug from 'debug';
 import Container, { Service } from 'typedi';
 import { LessThan } from 'typeorm';
 import { InjectRepository } from 'typeorm-typedi-extensions';
+
 import { DocumentRepository } from '../modules/internal/repositories/DocumentRepository';
 import { ReleaseRepository } from '../modules/internal/repositories/ReleaseRepository';
 
@@ -28,10 +29,10 @@ export class ReleaseCron {
   private static self: ReleaseCron;
   private user?: User;
 
-  @InjectRepository()
+  @InjectRepository(ReleaseRepository)
   private readonly releaseRepository: ReleaseRepository;
 
-  @InjectRepository()
+  @InjectRepository(DocumentRepository)
   private readonly documentRepository: DocumentRepository;
 
   private async tick() {

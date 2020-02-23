@@ -9,9 +9,11 @@ import { camelCase, omit, upperFirst } from 'lodash';
 import { createResolversMap } from 'type-graphql/dist/utils/createResolversMap';
 import Container from 'typedi';
 import { Connection, getRepository } from 'typeorm';
+
 import { Document } from '../../entities/Document';
 import { Schema, SchemaVariant } from '../../entities/Schema';
 import { DocumentTransformer } from '../../utils/DocumentTransformer';
+
 import { createAllDocumentResolver } from './resolvers/createAllDocumentResolver';
 import { createDocumentCreateResolver } from './resolvers/createDocumentCreateResolver';
 import { createDocumentRemoveResolver } from './resolvers/createDocumentRemoveResolver';

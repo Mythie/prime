@@ -1,12 +1,15 @@
-import latest from 'latest';
 import path from 'path';
-import readPkg from 'read-pkg';
-import { fields } from '../../../utils/fields';
 
-const getLatestVersion = packageName =>
-  new Promise(resolve => {
+import latest from 'latest';
+import readPkg from 'read-pkg';
+
+import { fields } from '../../../utils/fields';
+import { PackageVersion } from '../types/PackageVersion';
+
+const getLatestVersion = (packageName: string): Promise<string> =>
+  new Promise<string>(resolve => {
     try {
-      latest(packageName, (err, version) => {
+      latest(packageName, (err, version: string) => {
         return resolve(version);
       });
     } catch (err) {
@@ -14,7 +17,7 @@ const getLatestVersion = packageName =>
     }
   });
 
-export const getPackagesVersion = async () => {
+export const getPackagesVersion = async (): Promise<(PackageVersion | null)[]> => {
   const packages = [
     { packageName: '@primecms/core' },
     { packageName: '@primecms/ui' },
@@ -27,8 +30,14 @@ export const getPackagesVersion = async () => {
         const { version } = await readPkg({
           cwd: pkg.dir || path.dirname(require.resolve(`${pkg.packageName}/package.json`)),
         });
+
         const latestVersion = await getLatestVersion(pkg.packageName);
-        return { name: pkg.packageName, currentVersion: version, latestVersion };
+
+        return {
+          name: pkg.packageName as string,
+          currentVersion: version as string,
+          latestVersion: latestVersion as string,
+        };
       } catch (err) {
         return { name: pkg.packageName };
       }

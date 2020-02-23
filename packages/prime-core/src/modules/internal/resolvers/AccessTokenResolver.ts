@@ -1,10 +1,12 @@
 import crypto from 'crypto';
+
 import { GraphQLResolveInfo } from 'graphql';
 import Hashids from 'hashids/cjs';
 import { Arg, Args, Ctx, ID, Info, Mutation, Query, Resolver } from 'type-graphql';
 import { Repository } from 'typeorm';
 import { EntityConnection } from 'typeorm-cursor-connection';
 import { InjectRepository } from 'typeorm-typedi-extensions';
+
 import { AccessToken } from '../../../entities/AccessToken';
 import { Context } from '../../../interfaces/Context';
 import { AccessTokenInput } from '../types/AccessTokenInput';
@@ -13,24 +15,29 @@ import { Authorized } from '../utils/Authorized';
 
 const AccessTokenConnection = createConnectionType(AccessToken);
 
-@Resolver(of => AccessToken)
+@Resolver(_of => AccessToken)
 export class AccessTokenResolver {
   @InjectRepository(AccessToken)
   private readonly accessTokenRepository: Repository<AccessToken>;
 
   @Authorized()
-  @Query(returns => AccessToken, { nullable: true, description: 'Get Access Token by ID' })
+  @Query(_returns => AccessToken, { nullable: true, description: 'Get Access Token by ID' })
   public AccessToken(
-    @Arg('id', type => ID) id: string,
-    @Ctx() context: Context,
-    @Info() info: GraphQLResolveInfo
-  ) {
+    @Arg('id', _type => ID) id: string,
+    @Ctx() _context: Context,
+    @Info() _info: GraphQLResolveInfo
+  ): Promise<AccessToken | undefined> {
     return this.accessTokenRepository.findOne(id);
   }
 
   @Authorized()
-  @Query(returns => AccessTokenConnection, { description: 'Get many Access Tokens' })
-  public async allAccessTokens(@Args() args: ConnectionArgs) {
+  @Query(_returns => AccessTokenConnection, { description: 'Get many Access Tokens' })
+  public async allAccessTokens(
+    @Args() args: ConnectionArgs
+  ): Promise<{
+    edges: any[];
+    totalCount: number;
+  }> {
     const connection = await new EntityConnection(args, {
       repository: this.accessTokenRepository,
       sortOptions: [{ sort: '"createdAt"', order: 'DESC' }],
@@ -43,7 +50,7 @@ export class AccessTokenResolver {
   }
 
   @Authorized()
-  @Mutation(returns => AccessToken, { description: 'Create Access Token' })
+  @Mutation(_returns => AccessToken, { description: 'Create Access Token' })
   public async createAccessToken(
     @Arg('input') input: AccessTokenInput,
     @Ctx() context: Context
@@ -66,10 +73,10 @@ export class AccessTokenResolver {
   }
 
   @Authorized()
-  @Mutation(returns => Boolean, { description: 'Remove Access Token by ID' })
+  @Mutation(_returns => Boolean, { description: 'Remove Access Token by ID' })
   public async removeAccessToken(
-    @Arg('id', type => ID) id: string,
-    @Ctx() context: Context
+    @Arg('id', _type => ID) id: string,
+    @Ctx() _context: Context
   ): Promise<boolean> {
     const accessToken = await this.accessTokenRepository.findOneOrFail(id);
     return Boolean(await this.accessTokenRepository.remove(accessToken));
